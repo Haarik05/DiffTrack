@@ -36,7 +36,7 @@ let previousValue = {
         isOpenAllYear: true,
         isSeasonalOpen: false,
         isStoreOpenAtNight: false,
-        // monthsOpen: [],
+        monthsOpen: [6, 7, 8, 9, 0],
         reasonForOpeningAtNight: null,
     },
     // giftCards: {
@@ -69,10 +69,7 @@ let previousValue = {
         {
             "name": " Jacquelyn Durgan Anita",
             "isSigned": true,
-            "address": {
-                "street": "nesapakkam",
-                "contact": "9080966973"
-            }
+            "address": [1, 2, 3, 4, 5]
         },
         {
             "name": " Miss Ida Boyer Harry",
@@ -135,7 +132,7 @@ let latest = {
         isOpenAllYear: true,
         isSeasonalOpen: false,
         isStoreOpenAtNight: false,
-        // monthsOpen: [],
+        monthsOpen: [1, 2, 3, 4, 5],
         reasonForOpeningAtNight: null,
     },
     giftCards: {
@@ -168,10 +165,7 @@ let latest = {
         {
             "name": " Jacquelyn Durgan Anita",
             "isSigned": true,
-            "address": {
-                "street": "nesapakkam",
-                "contact": "9080966973"
-            }
+            "address": [1, 2, 3, 4, 5, 6]
         },
         {
             "name": " Miss Ida Boyer Harry",
@@ -206,4 +200,4 @@ const schema = {
 };
 const diff = new KycDiffChecker({ schema });
 const result = await diff.callDiffTracker(previousValue, latest, {});
-console.log("the result ->>", JSON.stringify(result));
+console.log("the result ->", JSON.stringify(result));

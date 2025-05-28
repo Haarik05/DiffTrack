@@ -1,30 +1,24 @@
 /**
- * Allows users to plug in completely custom comparison logic for specific array fields.
+ * Schema that tells the diff engine how to match items in arrays of objects.
+ * For each array field, you can specify which property to use as the unique identifier.
  */
-// export type ArrayHandlerConfig = {
-//   [key: string]: (prevArr: any[], newArr: any[]) => Promise<any> | any;
-// };
 export class KycDiffChecker {
-    // private arrayHandlers: ArrayHandlerConfig;
     schema;
     ignored;
-    nestedDetectCircular = true;
     constructor(config) {
-        // this.arrayHandlers = config?.arrayHandlers || {};
         this.schema = config?.schema || {};
         this.ignored = config?.ignoreKeys?.map((d) => String(d)) || [];
     }
-    async detectCircularReference(obj, seen) {
+    detectCircularReference(obj, seen) {
         if (obj && typeof obj === "object") {
             if (seen.has(obj)) {
                 throw new Error(`Circular reference detected`);
             }
             seen.add(obj);
             for (const key of Object.keys(obj)) {
-                await this.detectCircularReference(obj[key], seen);
+                this.detectCircularReference(obj[key], seen);
             }
         }
-        // seen.delete(obj);
     }
     /**
      * Main entry point: compares two objects and returns only the differences.
@@ -32,6 +26,9 @@ export class KycDiffChecker {
     async callDiffTracker(previousValue, latestValue, parentObject) {
         try {
             this.log(`Initiated callDiffTracker`);
+            // Check for circular references
+            this.detectCircularReference(previousValue, new WeakSet());
+            this.detectCircularReference(latestValue, new WeakSet());
             const data = await this.checkDifference(previousValue, latestValue, parentObject);
             return this.responseObj("SUCCESS", `Successfully found difference`, data);
         }
@@ -43,20 +40,15 @@ export class KycDiffChecker {
     async checkDifference(previousValue, latestValue, parentObject = {}) {
         this.log("Initiated checkDifference");
         try {
-            if (this.nestedDetectCircular) {
-                await this.detectCircularReference(previousValue, new WeakSet());
-                await this.detectCircularReference(latestValue, new WeakSet());
-                this.nestedDetectCircular = false;
-            }
             const allKeys = Array.from(new Set([...Object.keys(previousValue), ...Object.keys(latestValue)]));
             for (const key of allKeys) {
                 if (this.isIgnoredKey(key))
                     continue;
                 const prev = previousValue[key];
                 const latest = latestValue[key];
-                // Array of objects
+                // Array of objects or primitives
                 if (Array.isArray(prev) && Array.isArray(latest)) {
-                    const diffed = await this.handleArrays(prev, latest, key, parentObject);
+                    const diffed = await this.handleArrays(prev, latest, key);
                     if (diffed &&
                         (Array.isArray(diffed)
                             ? diffed.length > 0
@@ -69,7 +61,6 @@ export class KycDiffChecker {
                 }
                 else if (prev == null && latest && typeof latest === "object") {
                     await this.handleNullToObjectChange(key, latestValue, parentObject);
-                    // Nested object
                 }
                 else if (prev &&
                     typeof prev === "object" &&
@@ -79,7 +70,6 @@ export class KycDiffChecker {
                     this.log(`*********** CHECK DIFFERENCE CALLED ************`);
                     if (Object.keys(nested).length)
                         parentObject[key] = nested;
-                    // Addition
                 }
                 else if (!prev && latest) {
                     parentObject[key] = {
@@ -87,7 +77,6 @@ export class KycDiffChecker {
                         initialValue: "-",
                         latestValue: latest,
                     };
-                    // Deletion
                 }
                 else if (!latest && prev) {
                     parentObject[key] = {
@@ -95,7 +84,6 @@ export class KycDiffChecker {
                         initialValue: prev,
                         latestValue: "-",
                     };
-                    // Modification (primitive)
                 }
                 else if (prev?.toString().trim() !== latest?.toString().trim()) {
                     parentObject[key] = {
@@ -113,57 +101,46 @@ export class KycDiffChecker {
         }
     }
     /**
-     * Handles arrays of objects, using a custom handler if provided, or the default diff.
+     * Handles arrays of objects or primitives.
+     * For objects, uses schema-driven identifiers to compute differences.
+     * For primitives, computes additions and deletions as change objects.
      */
-    async handleArrays(prevArr, newArr, key, parentObject) {
-        this.log(`handleArrayOfObjects for ${key}`);
-        // check whether it is array of objects
+    async handleArrays(prevArr, newArr, key) {
+        this.log(`handleArrays for ${key}`);
         if (typeof prevArr?.[0] === "object" && typeof newArr?.[0] === "object") {
-            // Custom handling functions are temporarily disabled.
-            // const custom = this.arrayHandlers[key];
-            // if (custom) return await custom(prevArr, newArr);
-            // 2) schema-driven identifier
             const identifier = this.schema[key]?.arrayItemIdentifier;
-            return await this.getArrayOfObjectDiff(prevArr, newArr, identifier
-            // parentObject
-            );
+            return await this.getArrayOfObjectDiff(prevArr, newArr, identifier);
         }
         else {
-            // handle the primitive types by converting everything to string
             const oldData = prevArr.map((data) => this.normalizeString(data?.toString())) ?? [];
             const newData = newArr.map((data) => this.normalizeString(data?.toString())) ?? [];
-            const deletions = oldData.filter((element) => {
-                if (!newData.includes(element)) {
-                    return {
-                        mannerOfChange: "DELETION",
-                        initialValue: element,
-                        latestValue: "-",
-                    };
-                }
-            });
-            const addition = newData.filter((element) => {
-                if (!oldData.includes(element)) {
-                    return {
-                        mannerOfChange: "ADDITION",
-                        initialValue: "-",
-                        latestValue: element,
-                    };
-                }
-            });
-            const changes = [...addition, ...deletions];
-            return changes;
+            const deletions = oldData
+                .filter((element) => !newData.includes(element))
+                .map((element) => ({
+                mannerOfChange: "DELETION",
+                initialValue: element,
+                latestValue: "-",
+            }));
+            const additions = newData
+                .filter((element) => !oldData.includes(element))
+                .map((element) => ({
+                mannerOfChange: "ADDITION",
+                initialValue: "-",
+                latestValue: element,
+            }));
+            return [...additions, ...deletions];
         }
     }
     /**
-     * Default diff for arrays of objects.
-     * If identifier is provided, matches by that field and recurses for modifications;
-     * otherwise falls back to JSON.stringify-based add/delete.
+     * Computes differences for arrays of objects using an identifier.
+     * Returns an array of changes (additions, deletions, modifications).
      */
     async getArrayOfObjectDiff(prevArr, newArr, identifier) {
+        this.log(`Initiated getArrayOfObjectDiff`);
         const changes = [];
         const oldMap = new Map(prevArr.map((item) => [item[identifier], item]));
         const newMap = new Map(newArr.map((item) => [item[identifier], item]));
-        // additions & modifications
+        // Additions & modifications
         for (const [id, newItem] of newMap) {
             if (!oldMap.has(id)) {
                 changes.push({
@@ -183,24 +160,14 @@ export class KycDiffChecker {
                 }
             }
         }
-        // deletions
+        // Deletions
         for (const [id, oldItem] of oldMap) {
             if (!newMap.has(id)) {
                 changes.push({
-                    id,
+                    arrayItemIdentifier: id,
                     mannerOfChange: "DELETION",
                     initialValue: oldItem,
                 });
-            }
-            else {
-                const newItem = newMap.get(id);
-                const nestedDiff = await this.checkDifference(oldItem, newItem);
-                if (Object.keys(nestedDiff).length) {
-                    changes.push({
-                        arrayItemIdentifier: id,
-                        difference: nestedDiff,
-                    });
-                }
             }
         }
         return changes;
@@ -211,11 +178,11 @@ export class KycDiffChecker {
         const nested = {};
         for (const sub of Object.keys(prevObj)) {
             if (prevObj[sub] && typeof prevObj[sub] === "object") {
-                this.handleObjectToNullChange(sub, prevObj, nested);
+                await this.handleObjectToNullChange(sub, prevObj, nested);
                 parentObject[key] = nested;
                 return parentObject;
             }
-            else if (!!prevObj[sub]) {
+            else if (prevObj[sub]) {
                 nested[sub] = {
                     mannerOfChange: "DELETION",
                     initialValue: prevObj[sub],
@@ -234,11 +201,11 @@ export class KycDiffChecker {
         const nested = {};
         for (const sub of Object.keys(newObj)) {
             if (newObj[sub] && typeof newObj[sub] === "object") {
-                this.handleNullToObjectChange(sub, newObj, nested);
+                await this.handleNullToObjectChange(sub, newObj, nested);
                 parentObject[key] = nested;
                 return parentObject;
             }
-            else if (!!newObj[sub]) {
+            else if (newObj[sub]) {
                 nested[sub] = {
                     mannerOfChange: "ADDITION",
                     initialValue: "-",
@@ -255,13 +222,10 @@ export class KycDiffChecker {
         return this.ignored.includes(key);
     }
     normalizeString(str) {
-        return str.replace(/\s+/g, "").trim(); // Remove the spaces inbetween.
+        return str.replace(/\s+/g, "").trim();
     }
     log(message) {
         console.log(`${message}`);
-    }
-    logError(message) {
-        console.error(`${message}`);
     }
     responseObj(status, message, data) {
         return {
