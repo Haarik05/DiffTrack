@@ -207,4 +207,3 @@ const schema: DiffSchema = {
 
 const diff = new KycDiffChecker({schema});
 const result = await diff.callDiffTracker(previousValue, latest, {});
-console.log("the result ->", JSON.stringify(result))
