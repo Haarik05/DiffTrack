@@ -3,26 +3,37 @@
   "version": "1.0.0",
   "description": "Compare two objects and track granular differences",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "dist/index.min.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && esbuild dist/index.js --minify --outfile=dist/index.min.js",
     "prepare": "npm run build"
   },
-  "keywords": ["diff", "object-diff", "differences", "Compare", "kyc", "json", "objectDifference"],
-  
+  "keywords": [
+    "diff",
+    "object-diff",
+    "differences",
+    "Compare",
+    "kyc",
+    "json",
+    "objectDifference"
+  ],
   "exports": {
-    ".":{
+    ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }
   },
-  "files": ["dist", "README.md"],
-
+  "files": [
+    "dist/index.min.js",
+    "dist/index.d.ts",
+    "README.md"
+  ],
   "author": "harishkumar",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^22.15.17",
+    "esbuild": "^0.25.5",
     "typescript": "^5.8.3"
   }
 }
