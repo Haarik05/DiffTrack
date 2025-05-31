@@ -1,22 +1,26 @@
 {
   "name": "diffengine",
   "version": "1.0.0",
-  "description": "gives the difference of two objects",
+  "description": "Compare two objects and track granular differences",
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "prepare": "npm run build"
   },
+  "keywords": ["diff", "object-diff", "differences", "Compare", "kyc", "json", "objectDifference"],
+  
   "exports": {
     ".":{
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }
   },
-  "files": ["dist"],
+  "files": ["dist", "README.md"],
 
   "author": "harishkumar",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@types/node": "^22.15.17",
     "typescript": "^5.8.3"

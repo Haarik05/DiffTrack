@@ -1,0 +1,6 @@
+src/
+test/
+node_modules/
+tsconfig.json
+dist/test.js
+dist/test.d.ts

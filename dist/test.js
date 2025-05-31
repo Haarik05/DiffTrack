@@ -1,4 +1,4 @@
-import { KycDiffChecker } from "./index.js";
+import { DiffChecker } from "./index.js";
 let previousValue = {
     countryCode: "SE",
     partnerId: "8113d3f8403b380409",
@@ -58,7 +58,7 @@ let previousValue = {
     },
     applicantInfo: {
         name: "Swaniawski Group",
-        // email: "sathish@su.se", --addition
+        email: "sathish@su.se",
     },
     storeLevelPaymentSegregation: false,
     // merchant: null,
@@ -152,10 +152,10 @@ let latest = {
         estimatedNoOfDailyTransactions: null,
         priceOfMostExpensiveItemSold: 300000,
     },
-    applicantInfo: {
-        name: "Swaniawski Group",
-        email: "sathish@su.se",
-    },
+    // applicantInfo: {
+    //   name: "Swaniawski Group",
+    //   email: "sathish@su.se",
+    // },
     storeLevelPaymentSegregation: false,
     merchant: null,
     bankInfo: null,
@@ -198,6 +198,6 @@ const schema = {
         arrayItemIdentifier: "name"
     },
 };
-const diff = new KycDiffChecker({ schema });
-const result = await diff.callDiffTracker(previousValue, latest, {});
-console.log("the result ->", JSON.stringify(result));
+const diff = new DiffChecker({ schema });
+const result = await diff.callDiffTracker(previousValue, latest, new Object());
+console.log(JSON.stringify(result));

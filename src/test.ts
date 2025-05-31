@@ -1,5 +1,5 @@
 
-import { DiffSchema, KycDiffChecker } from "./index.ts";
+import { DiffChecker, DiffSchema } from "./index.ts";
 
   let previousValue = {
     countryCode: "SE",
@@ -60,7 +60,7 @@ import { DiffSchema, KycDiffChecker } from "./index.ts";
     },
     applicantInfo: {
       name: "Swaniawski Group",
-      // email: "sathish@su.se", --addition
+      email: "sathish@su.se", 
     },
     storeLevelPaymentSegregation: false,
     // merchant: null,
@@ -156,10 +156,10 @@ import { DiffSchema, KycDiffChecker } from "./index.ts";
       estimatedNoOfDailyTransactions: null,
       priceOfMostExpensiveItemSold: 300000,
     },
-    applicantInfo: {
-      name: "Swaniawski Group",
-      email: "sathish@su.se",
-    },
+    // applicantInfo: {
+    //   name: "Swaniawski Group",
+    //   email: "sathish@su.se",
+    // },
     storeLevelPaymentSegregation: false,
     merchant: null,
     bankInfo: null,
@@ -205,5 +205,6 @@ const schema: DiffSchema = {
 }
 
 
-const diff = new KycDiffChecker({schema});
-const result = await diff.callDiffTracker(previousValue, latest, {});
+const diff = new DiffChecker({schema});
+const result = await diff.callDiffTracker(previousValue, latest, new Object());
+console.log(JSON.stringify(result))
