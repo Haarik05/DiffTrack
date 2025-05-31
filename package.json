@@ -1,6 +1,11 @@
 {
+<<<<<<< Updated upstream
   "name": "diffengine",
   "version": "1.0.0",
+=======
+  "name": "diffengine-beta",
+  "version": "1.0.1",
+>>>>>>> Stashed changes
   "description": "Compare two objects and track granular differences",
   "type": "module",
   "main": "dist/index.min.js",
