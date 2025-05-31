@@ -11,7 +11,7 @@ export interface DiffSchema {
   };
 }
 
-export class KycDiffChecker {
+export class DiffChecker {
   private schema: DiffSchema;
   private ignored: Array<string>;
 
@@ -150,6 +150,7 @@ export class KycDiffChecker {
 
     if (typeof prevArr?.[0] === "object" && typeof newArr?.[0] === "object") {
       const identifier = this.schema[key]?.arrayItemIdentifier;
+      if(!identifier) throw new Error(`Please provide the unique identifier to detect the changes in the array`)
       return await this.getArrayOfObjectDiff(prevArr, newArr, identifier);
     } else {
       const oldData =

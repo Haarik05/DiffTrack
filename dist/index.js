@@ -2,7 +2,7 @@
  * Schema that tells the diff engine how to match items in arrays of objects.
  * For each array field, you can specify which property to use as the unique identifier.
  */
-export class KycDiffChecker {
+export class DiffChecker {
     schema;
     ignored;
     constructor(config) {
@@ -109,6 +109,8 @@ export class KycDiffChecker {
         this.log(`handleArrays for ${key}`);
         if (typeof prevArr?.[0] === "object" && typeof newArr?.[0] === "object") {
             const identifier = this.schema[key]?.arrayItemIdentifier;
+            if (!identifier)
+                throw new Error(`Please provide the unique identifier to detect the changes in the array`);
             return await this.getArrayOfObjectDiff(prevArr, newArr, identifier);
         }
         else {
