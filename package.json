@@ -1,6 +1,6 @@
 {
   "name": "diffengine",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Compare two objects and track granular differences",
   "type": "module",
   "main": "dist/index.min.js",
