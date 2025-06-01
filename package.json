@@ -1,5 +1,5 @@
 {
-  "name": "diffengine-beta",
+  "name": "diffengine",
   "version": "1.0.1",
   "description": "Compare two objects and track granular differences",
   "type": "module",
@@ -20,7 +20,7 @@
   ],
   "exports": {
     ".": {
-      "import": "./dist/index.js",
+      "import": "./dist/index.min.js",
       "types": "./dist/index.d.ts"
     }
   },
