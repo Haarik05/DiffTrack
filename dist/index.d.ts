@@ -8,7 +8,7 @@ export interface DiffSchema {
         arrayItemIdentifier: string;
     };
 }
-export declare class DiffChecker {
+export declare class DiffEngine {
     private schema;
     private ignored;
     constructor(config?: {
