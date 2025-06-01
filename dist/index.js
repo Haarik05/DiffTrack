@@ -2,7 +2,7 @@
  * Schema that tells the diff engine how to match items in arrays of objects.
  * For each array field, you can specify which property to use as the unique identifier.
  */
-export class DiffChecker {
+export class DiffEngine {
     schema;
     ignored;
     constructor(config) {

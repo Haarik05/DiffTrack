@@ -1,6 +1,5 @@
 
-import { DiffChecker, DiffSchema } from "./index.ts";
-
+import {DiffSchema, DiffEngine} from "./index.ts";
   let previousValue = {
     countryCode: "SE",
     partnerId: "8113d3f8403b380409",
@@ -205,6 +204,6 @@ const schema: DiffSchema = {
 }
 
 
-const diff = new DiffChecker({schema});
+const diff = new DiffEngine({schema});
 const result = await diff.callDiffTracker(previousValue, latest, new Object());
 console.log(JSON.stringify(result))

@@ -1,4 +1,4 @@
-import { DiffChecker } from "./index.js";
+import { DiffEngine } from "./index.js";
 let previousValue = {
     countryCode: "SE",
     partnerId: "8113d3f8403b380409",
@@ -198,6 +198,6 @@ const schema = {
         arrayItemIdentifier: "name"
     },
 };
-const diff = new DiffChecker({ schema });
+const diff = new DiffEngine({ schema });
 const result = await diff.callDiffTracker(previousValue, latest, new Object());
 console.log(JSON.stringify(result));

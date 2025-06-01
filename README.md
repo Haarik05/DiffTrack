@@ -1,6 +1,6 @@
-# DiffTrack
+# DiffEngine
 
-**DiffTrack** is a lightweight and schema-driven utility to compare JavaScript/JSON objects and identify field-level differences. It is built to work seamlessly with deeply nested structures, including arrays of objects — perfect for tracking changes in user profiles, KYC forms, account records, and more.
+**DiffEngine** is a lightweight and schema-driven utility to compare JavaScript/JSON objects and identify field-level differences. It is built to work seamlessly with deeply nested structures, including arrays of objects — perfect for tracking changes in user profiles, KYC forms, account records, and more.
 
 ## ✨ Features
 
@@ -14,7 +14,7 @@
 ## 📦 Installation
 
 ```bash
-npm install difftrack
+npm install diffengine
 ```
 
 ---
@@ -22,7 +22,7 @@ npm install difftrack
 ## 🚀 Quick Start
 
 ```ts
-import DiffTrack from 'difftrack';
+import {DiffEngine, DiffSchema} from 'diffengine';
 
 const oldData = {
   store: {
@@ -50,14 +50,14 @@ const newData = {
 };
 
 // Schema to guide comparison
-const schema = {
+const schema: DiffSchema = {
   SignatoryData: {
     arrayItemIdentifier: 'fullName'
   }
 };
 
-const diff = new DiffChecker({schema});
-const result = await diff.callDiffTracker(previousValue, latest, new Object);
+const diff = new DiffEngine({schema});
+const result = await diff.callDiffTracker(oldData, newData, new Object);
 console.log(JSON.stringify(result));
 ```
 
@@ -65,7 +65,7 @@ console.log(JSON.stringify(result));
 
 ## 🧠 Schema Design
 
-When comparing arrays of objects, DiffTrack needs to know **which property uniquely identifies each item**. You define this using a schema.
+When comparing arrays of objects, DiffEngine needs to know **which property uniquely identifies each item**. You define this using a schema.
 
 ### 🔧 Schema Format
 
@@ -93,9 +93,22 @@ const schema: DiffSchema = {
 
 ---
 
+
+---
+
+## 🧠 🚫 Ignoring Keys
+DiffEngine supports an ignoreKeys option — a list of keys to omit entirely from comparison. This is helpful for ignoring fields like timestamps, metadata, or any property that should not trigger a diff.
+
+### 🗞️ Example
+
+```ts
+const diff = new DiffEngine({ schema, ignoreKeys: ['updatedAt', 'lastModified'] });
+```
+---
+
 ## 📄 Output Structure
 
-DiffTrack returns a detailed breakdown of changes:
+DiffEngine returns a detailed breakdown of changes:
 
 ```json
 {

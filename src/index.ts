@@ -11,7 +11,7 @@ export interface DiffSchema {
   };
 }
 
-export class DiffChecker {
+export class DiffEngine {
   private schema: DiffSchema;
   private ignored: Array<string>;
 
